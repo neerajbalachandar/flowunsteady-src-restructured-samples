@@ -69,12 +69,6 @@ Returns a configured UVLM vehicle with all wing systems.
     # Build comprehensive wing system with proper hierarchy
     system = uns.vlm.WingSystem()
     
-    # Create individual wing components
-    fore_wing_left = uns.vlm.Wing()
-    fore_wing_right = uns.vlm.Wing() 
-    hind_wing_left = uns.vlm.Wing()
-    hind_wing_right = uns.vlm.Wing()
-    
     # Add wings to main vehicle system
     uns.vlm.addwing(system, "ForeWing_L", fore_wing_left)
     uns.vlm.addwing(system, "ForeWing_R", fore_wing_right)
@@ -122,27 +116,27 @@ Returns a configured UVLM vehicle with all wing systems.
     println("UVLM vehicle configuration successful")
     return vehicle
 
+    #EXPORTING---------------
+    # Define output directory
+    save_geom_path = ""
+    
+    # Clean/create directory
+    if isdir(save_geom_path)
+        rm(save_geom_path; recursive=true, force=true)
+    end
+    mkdir(save_geom_path)
+    
+    # Set freestream velocity for visualization context
+    uns.vlm.setVinf(system, Vinf)
+    
+    # Save VTK files and get master PVD file name
+    pvd_file = uns.save_vtk(vehicle, "dragonfly"; 
+                            path=save_geom_path,
+                            save_wopwopin=false)  # Set true if needing acoustic inputs
+    
+    # Open in ParaView using the master PVD file
+    paraview_file = joinpath(save_geom_path, pvd_file)
+    run(`paraview --data=$paraview_file`, wait=false)
+    
 end
-
-#EXPORTING---------------
-# Define output directory
-save_geom_path = ""
-
-# Clean/create directory
-if isdir(save_geom_path)
-    rm(save_geom_path; recursive=true, force=true)
-end
-mkdir(save_geom_path)
-
-# Set freestream velocity for visualization context
-uns.vlm.setVinf(system, Vinf)
-
-# Save VTK files and get master PVD file name
-pvd_file = uns.save_vtk(vehicle, "dragonfly"; 
-                        path=save_geom_path,
-                        save_wopwopin=false)  # Set true if needing acoustic inputs
-
-# Open in ParaView using the master PVD file
-paraview_file = joinpath(save_geom_path, pvd_file)
-run(`paraview --data=$paraview_file`, wait=false)
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
