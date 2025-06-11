@@ -123,3 +123,26 @@ Returns a configured UVLM vehicle with all wing systems.
     return vehicle
 
 end
+
+#EXPORTING---------------
+# Define output directory
+save_geom_path = ""
+
+# Clean/create directory
+if isdir(save_geom_path)
+    rm(save_geom_path; recursive=true, force=true)
+end
+mkdir(save_geom_path)
+
+# Set freestream velocity for visualization context
+uns.vlm.setVinf(system, Vinf)
+
+# Save VTK files and get master PVD file name
+pvd_file = uns.save_vtk(vehicle, "dragonfly"; 
+                        path=save_geom_path,
+                        save_wopwopin=false)  # Set true if needing acoustic inputs
+
+# Open in ParaView using the master PVD file
+paraview_file = joinpath(save_geom_path, pvd_file)
+run(`paraview --data=$paraview_file`, wait=false)
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
