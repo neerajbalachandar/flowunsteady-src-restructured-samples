@@ -3,7 +3,36 @@ __authors__ = "NEERAJ BALACHANDAR"
 __contact__ = "neerajbalachandar@gmail.com"
 
 """
+    UVLMVehicle{N, M, R}(system; tilting_systems, rotors_systems,
+                                            vlm_system, wake_system, grids)
 
+Type handling all geometries and subsystems that define a vehicle made
+out of FLOWVLM components (Wing, WingSystem, Rotor).
+
+# ARGUMENTS WE HAVE CONSIDERED INCLUDE:
+* `system::FLOWVLM.WingSystem`:        System of all FLOWVLM objects. This system
+                                    is considered as the entire vehicle. Not all
+                                    components in this system will be solved,
+                                    but they will all be rotated and translated
+                                    according to the maneuver.
+# OPTIONAL ARGUMENTS
+* `tilting_systems::NTuple{N, FLOWVLM.WingSystem}`:   Tuple of all FLOWVLM
+                                    tilting objects, where `tilting_systems[i]`
+                                    contains the i-th FLOWVLM system of lifting
+                                    surfaces and rotors that tilt together.
+
+* `vlm_system::FLOWVLM.WingSystem`:    System of all FLOWVLM objects to be solved
+                                    through the VLM solver.
+* `wake_system::FLOWVLM.WingSystem`:   System of all FLOWVLM objects that will
+                                    shed a VPM wake.
+* `grids::Array{gt.GridTypes}`:         Array of grids that will be translated and
+                                    rotated along with `system`.
+
+# State variables
+* `V::Vector`                   : Current vehicle velocity
+* `W::Vector`                   : Current vehicle angular velocity
+* `prev_data::Array{Any}`       : Information about previous step
+* `grid_O::Vector{Vector}`       : Origin of every grid
 """
 
 #-----------------------------------------------------------FLOWUnsteady_openvsp.jl--------------------------------------------------------------------------------
