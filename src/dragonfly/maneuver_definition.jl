@@ -5,7 +5,7 @@ __contact__ = "neerajbalachandar@gmail.com"
 #--------------WILL BE UPDATED BASED ON SOLVING THE VEHICLE KINEMATIC EQUATIONS TO COUPLE THE CONTROL INPUT WITH KINEMATICS, EITHER BY EXPERIMENTAL VALIDATION FOR HOVERING CONDITION AND FORWARD FLIGHT OR THROUGH SIMULATION-----
 #-----------------------------------------------------------FIXED VEHICLE WITH SYNCHRONISED PHASE FLAPPING OF SAME AMPLITUDE AND FREQUENCY FOR EACH WING----------------------
 
-function generate_dragonfly_maneuver(; vehicle_velocity::Real=0.0, angle_of_attack::Real=0.0)
+function generate_dragonfly_maneuver(; disp_plot = true, add_wings = true, vehicle_velocity::Real=0.0, angle_of_attack::Real=0.0)
     
     amp = 60 * (pi/180) 
     freq = 30 # Hz      
@@ -28,11 +28,7 @@ function generate_dragonfly_maneuver(; vehicle_velocity::Real=0.0, angle_of_atta
     rotor_rpms = ()
     
     # kinematic maneuver
-    maneuver = uns.KinematicManeuver(
-        wing_angles, 
-        rotor_rpms, 
-        vehicle_velocity_func, 
-        vehicle_angle_func
-    )
+    maneuver = uns.KinematicManeuver(wing_angles, rotor_rpms, vehicle_velocity_func, vehicle_angle_func)
+    uns.plot_maneuver(maneuver)
     return maneuver
 end
