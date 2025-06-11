@@ -5,7 +5,7 @@ __contact__ = "neerajbalachandar@gmail.com"
 #--------------WILL BE UPDATED BASED ON SOLVING THE VEHICLE KINEMATIC EQUATIONS TO COUPLE THE CONTROL INPUT WITH KINEMATICS, EITHER BY EXPERIMENTAL VALIDATION FOR HOVERING CONDITION AND FORWARD FLIGHT OR THROUGH SIMULATION-----
 #-----------------------------------------------------------FIXED VEHICLE WITH SYNCHRONISED PHASE FLAPPING OF SAME AMPLITUDE AND FREQUENCY FOR EACH WING----------------------
 """
-    KinematicManeuver{N, M}(angle, RPM, Vvehicle, anglevehicle)
+    KinematicManeuver{N, M}(angle, Vvehicle, anglevehicle)
 
 A vehicle maneuver that prescribes the kinematics of the vehicle through the
 functions `Vvehicle` and `anglevehicle`. Control inputs to each tilting and 
