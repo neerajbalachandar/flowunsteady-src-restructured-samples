@@ -3,11 +3,10 @@ __authors__ = "NEERAJ BALACHANDAR"
 __contact__ = "neerajbalachandar@gmail.com"
 
 """
-    UVLMVehicle{N, M, R}(system; tilting_systems, rotors_systems,
-                                            vlm_system, wake_system, grids)
+    UVLMVehicle{N, M, R}(system; tilting_systems, vlm_system, wake_system, grids)
 
 Type handling all geometries and subsystems that define a vehicle made
-out of FLOWVLM components (Wing, WingSystem, Rotor).
+out of FLOWVLM components (Wing, WingSystem).
 
 # ARGUMENTS WE HAVE CONSIDERED INCLUDE:
 * `system::FLOWVLM.WingSystem`:        System of all FLOWVLM objects. This system
@@ -15,7 +14,7 @@ out of FLOWVLM components (Wing, WingSystem, Rotor).
                                     components in this system will be solved,
                                     but they will all be rotated and translated
                                     according to the maneuver.
-# OPTIONAL ARGUMENTS
+
 * `tilting_systems::NTuple{N, FLOWVLM.WingSystem}`:   Tuple of all FLOWVLM
                                     tilting objects, where `tilting_systems[i]`
                                     contains the i-th FLOWVLM system of lifting
@@ -36,9 +35,9 @@ out of FLOWVLM components (Wing, WingSystem, Rotor).
 """
 
 #-----------------------------------------------------------FLOWUnsteady_openvsp.jl--------------------------------------------------------------------------------
-function import_dragonfly_geometry()
+function dragonfly_geometry()
 """
-    import_dragonfly_geometry() -> UVLMVehicle
+    dragonfly_geometry() -> UVLMVehicle
   
 Import and process the dragonfly geometry from VSP degenerate geometry file.
 Returns a configured UVLM vehicle with all wing systems.
@@ -64,58 +63,63 @@ Returns a configured UVLM vehicle with all wing systems.
 
 #-------------------------------------------------------------FLOWUnsteady_vehicle_vlm_unsteady.jl--------------------------------------------------------------------------
     # Create body grid
-    fuselage_grid = uns.gt.MultiGrid(3)  # Fixed variable name consistency
+    fuselage_grid = uns.gt.MultiGrid(3)
     uns.gt.addgrid(fuselage_grid, "Body", body)
-
-    # Build comprehensive wing system
+    
+    # Build comprehensive wing system with proper hierarchy
     system = uns.vlm.WingSystem()
+    
+    # Create individual wing components
+    fore_wing_left = uns.vlm.Wing()
+    fore_wing_right = uns.vlm.Wing() 
+    hind_wing_left = uns.vlm.Wing()
+    hind_wing_right = uns.vlm.Wing()
+    
+    # Add wings to main vehicle system
     uns.vlm.addwing(system, "ForeWing_L", fore_wing_left)
     uns.vlm.addwing(system, "ForeWing_R", fore_wing_right)
     uns.vlm.addwing(system, "HindWing_L", hind_wing_left)
     uns.vlm.addwing(system, "HindWing_R", hind_wing_right)
     
-    # Configure tilting systems properly - each tilting system should be a WingSystem
-    # containing wings that tilt together
+    # Configure tilting systems as WingSystem subgroups
     fore_tilting_system = uns.vlm.WingSystem()
-    uns.vlm.addwing(fore_tilting_system, "ForeWing_L", fore_wing_left)
-    uns.vlm.addwing(fore_tilting_system, "ForeWing_R", fore_wing_right)
-    
     hind_tilting_system = uns.vlm.WingSystem()
-    uns.vlm.addwing(hind_tilting_system, "HindWing_L", hind_wing_left)
-    uns.vlm.addwing(hind_tilting_system, "HindWing_R", hind_wing_right)
     
-    # Define tilting systems as tuple of WingSystems
-    tilting_systems = (fore_tilting_system, hind_tilting_system)
+    # Reference wings in tilting systems (no duplication)
+    uns.vlm.addwing(fore_tilting_system, "Left", fore_wing_left)
+    uns.vlm.addwing(fore_tilting_system, "Right", fore_wing_right)
+    uns.vlm.addwing(hind_tilting_system, "Left", hind_wing_left)
+    uns.vlm.addwing(hind_tilting_system, "Right", hind_wing_right)
     
-    # Surface regularization should be handled differently
-    # Remove the direct sol access approach as it's not standard
+    # Initialize vehicle with proper kinematic hierarchy
+    vehicle = uns.UVLMVehicle(
+        system;
+        tilting_systems = (fore_tilting_system, hind_tilting_system),
+        grids = [fuselage_grid],
+        vlm_system = system,  # Solve entire system with VLM
+        wake_system = system, # Shed wake from all components
+        V = zeros(3),  # Initial linear velocity
+        W = zeros(3),  # Initial angular velocity
+        prev_data = [
+            deepcopy(system),  # Previous vlm_system state
+            deepcopy(system),  # Previous wake_system state
+            ()  # Empty rotor systems
+        ]
+    )
     
-    grids = [fuselage_grid]  # Fixed variable name
-    vlm_system = system
-    wake_system = system
-    
-    # Set freestream velocity
-    uns.vlm.setVinf(system, freestream_velocity)
-    
-    # Create UVLM vehicle with proper tilting systems
-    vehicle = uns.VLMVehicle(system;
-        tilting_systems=tilting_systems,  # Add tilting systems
-        grids=grids,
-        vlm_system=vlm_system,
-        wake_system=wake_system
-    );
-    
-    # Check panel counts with proper wing access
-    for (i, wing) in enumerate(system.wings)
+    # Validate panel counts with proper indexing
+    for (i, wing) in enumerate(vehicle.system.wings)
         m_panels = uns.vlm.get_m(wing)
-        wing_name = "Wing_$i"  # Use index-based naming or store names separately
-        println("$wing_name: $m_panels panels")
+        println("Wing $i: $m_panels panels")
         if m_panels < 50
-            @warn "Low panel count detected for $wing_name"
+            @warn "Low panel count ($m_panels) detected in wing $i"
         end
     end
-    println("Configuring UVLM vehicle successful")
     
+    # Initialize grid origins for kinematic transformations
+    vehicle.grid_O = [zeros(3) for _ in vehicle.grids]
+    
+    println("UVLM vehicle configuration successful")
     return vehicle
 
 end
