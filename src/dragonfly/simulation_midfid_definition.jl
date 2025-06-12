@@ -9,14 +9,12 @@ __contact__ = "neerajbalachandar@gmail.com"
 # DESCRIPTION
     Complete dragonfly flapping wing simulation with integrated fluid domain
     computation. This implementation runs the UVLM/rVPM simulation and then
-    processes the particle field to generate volumetric flow field data for
-    detailed aerodynamic analysis.
+    processes the particle field to generate volumetric flow field data.
 
 # AUTHORSHIP
   * Author          : NEERAJ BALACHANDAR
   * Email           : neerajbalachandar@gmail.com
   * Created         : Based on FLOWUnsteady framework
-  * License         : MIT
 =###############################################################################
 
 import FLOWUnsteady as uns
