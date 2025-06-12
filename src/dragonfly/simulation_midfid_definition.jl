@@ -2,28 +2,15 @@
 __authors__ = "NEERAJ BALACHANDAR"
 __contact__ = "neerajbalachandar@gmail.com"
 
-#-------------------------------------------MID FIDELITY WITH PARTICLE FIELD AND FLUID DOMAIN CALCULATION-------------------------------------------------------------------
+#-------------------------------------------MID FIDELITY WITH PARTICLE FIELD AND FLUID DOMAIN CALCULATION. UVLM,rVPM simulation-------------------------------------------------------------------
 #-------------------------------------------SIMULATION DEFINITION WITH POST PROCESSING--------------------------------------------------------------------------------------
-
-#=##############################################################################
-# DESCRIPTION
-    Complete dragonfly flapping wing simulation with integrated fluid domain
-    computation. This implementation runs the UVLM/rVPM simulation and then
-    processes the particle field to generate volumetric flow field data.
-
-# AUTHORSHIP
-  * Author          : NEERAJ BALACHANDAR
-  * Email           : neerajbalachandar@gmail.com
-  * Created         : Based on FLOWUnsteady framework
-=###############################################################################
 
 import FLOWUnsteady as uns
 import FLOWUnsteady: vlm, vpm, gt, Im, dot, norm
 
-# Include dragonfly-specific modules
-include("maneuver_definition.jl")      # Kinematic maneuver generation
-include("vehicle_definition.jl")      # Vehicle geometry construction
-include("monitor_definition.jl")       # Monitoring and analysis functions
+include("maneuver_definition.jl")     
+include("vehicle_definition.jl")    
+include("monitor_definition.jl")   
 
 # =============================================================================
 # SIMULATION PARAMETERS
@@ -41,9 +28,7 @@ add_wings       = true                      # Whether to include wings
 add_rotors      = false                     # No rotors for dragonfly
 
 # Reference lengths (typical dragonfly dimensions)
-wingspan        = 0.10                      # (m) dragonfly wingspan ~10cm
-chord           = 0.015                     # (m) average wing chord ~1.5cm
-thickness       = 0.0003                   # (m) wing thickness ~0.3mm
+wingspan        = 1.0                      # (m) dragonfly wingspan ~10cm
 
 # ----------------- FLIGHT PARAMETERS ------------------------------------------
 # Flapping kinematics
@@ -56,7 +41,6 @@ angle_of_attack = 5.0                       # (degrees) vehicle angle of attack
 Vinf(X,t)       = [vehicle_velocity, 0, 0]  # (m/s) freestream velocity
 rho             = 1.225                     # (kg/m^3) air density
 mu              = 1.81e-5                   # (kg/ms) air dynamic viscosity
-Re              = rho * vehicle_velocity * chord / mu  # Reynolds number
 
 # Time parameters
 flap_cycles     = 3                         # Number of flapping cycles to simulate
