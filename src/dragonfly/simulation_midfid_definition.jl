@@ -38,7 +38,7 @@ vehicle_velocity = 1.0                      # (m/s) forward flight velocity
 angle_of_attack = 5.0                       # (degrees) vehicle angle of attack
 
 # Flight conditions
-Vinf(X,t)       = [vehicle_velocity, 0.0, 0.0]  # (m/s) freestream velocity
+Vinf(X,t)       = 20.0*[1.0, 0.0, 0.0]  # (m/s) freestream velocity
 rho             = 1.225                     # (kg/m^3) air density
 mu              = 1.81e-5                   # (kg/ms) air dynamic viscosity
 
@@ -232,7 +232,7 @@ wingmonitor_optargs = (
 
 # Generate monitoring functions
 monitors = generate_monitor_dragonfly(
-    vehicle, rho, Vref, nsteps, save_path;
+    vehicle, rho, Vinf, nsteps, save_path;
     add_wings=add_wings,
     wingmonitor_optargs=wingmonitor_optargs
 )
