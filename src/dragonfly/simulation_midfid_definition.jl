@@ -273,7 +273,6 @@ println("\n7) Running simulation...")
 println("   Simulating $flap_cycles flapping cycles over $(round(ttot, digits=3)) seconds")
 println("   Forward velocity: $(vehicle_velocity) m/s")
 println("   Angle of attack: $(angle_of_attack)°")
-println("   Reynolds number: $(round(Re, digits=0))")
 
 # Execute simulation
 uns.run_simulation(simulation, nsteps;
