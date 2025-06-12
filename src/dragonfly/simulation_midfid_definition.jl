@@ -28,7 +28,7 @@ add_wings       = true                      # Whether to include wings
 add_rotors      = false                     # No rotors for dragonfly
 
 # Reference lengths (typical dragonfly dimensions)
-wingspan        = 1.0                      # (m) dragonfly wingspan ~10cm
+wingspan        = 1.0                      # (m) dragonfly wingspan
 
 # ----------------- FLIGHT PARAMETERS ------------------------------------------
 # Flapping kinematics
@@ -85,7 +85,7 @@ add_unsteadyforce = false
 include_parasiticdrag = true
 add_skinfriction = true
 calc_cd_from_cl = false
-wing_polar_file = "xf-n0012-il-500000-n5.csv"  # Thin airfoil for dragonfly wings
+wing_polar_file = "xf-n0012-il-500000-n5.csv"
 
 # VPM solver settings
 vpm_integration = vpm.euler                 # Temporal integration scheme
