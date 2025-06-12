@@ -23,7 +23,7 @@ paraview        = true                              # Whether to visualize with 
 compute_fluid_domain = true                         # Whether to compute fluid domain post-simulation
 
 # ----------------- GEOMETRY PARAMETERS ----------------------------------------
-n_factor        = 4                         # Discretization factor
+n_factor        = 2                         # Discretization factor
 add_wings       = true                      # Whether to include wings
 add_rotors      = false                     # No rotors for dragonfly
 
