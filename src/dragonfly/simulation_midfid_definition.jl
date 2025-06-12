@@ -23,9 +23,9 @@ import FLOWUnsteady as uns
 import FLOWUnsteady: vlm, vpm, gt, Im, dot, norm
 
 # Include dragonfly-specific modules
-include("dragonfly_maneuver.jl")      # Kinematic maneuver generation
-include("dragonfly_geometry.jl")      # Vehicle geometry construction
-include("dragonfly_monitor.jl")       # Monitoring and analysis functions
+include("maneuver_definition.jl")      # Kinematic maneuver generation
+include("vehicle_definition.jl")      # Vehicle geometry construction
+include("monitor_definition.jl")       # Monitoring and analysis functions
 
 # =============================================================================
 # SIMULATION PARAMETERS
