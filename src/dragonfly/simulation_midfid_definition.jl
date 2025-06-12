@@ -2,15 +2,33 @@
 __authors__ = "NEERAJ BALACHANDAR"
 __contact__ = "neerajbalachandar@gmail.com"
 
-#-------------------------------------------MID FIDELITY WITH PARTICLE FIELD AND FLUID DOMAIN CALCULATION. UVLM,rVPM simulation-------------------------------------------------------------------
+#-------------------------------------------MID FIDELITY WITH PARTICLE FIELD AND FLUID DOMAIN CALCULATION-------------------------------------------------------------------
 #-------------------------------------------SIMULATION DEFINITION WITH POST PROCESSING--------------------------------------------------------------------------------------
+
+#=##############################################################################
+# DESCRIPTION
+    Complete dragonfly flapping wing simulation with integrated fluid domain
+    computation. This implementation runs the UVLM/rVPM simulation and then
+    processes the particle field to generate volumetric flow field data for
+    detailed aerodynamic analysis.
+
+# AUTHORSHIP
+  * Author          : NEERAJ BALACHANDAR
+  * Email           : neerajbalachandar@gmail.com
+  * Created         : Based on FLOWUnsteady framework
+  * License         : MIT
+=###############################################################################
 
 import FLOWUnsteady as uns
 import FLOWUnsteady: vlm, vpm, gt, Im, dot, norm
 
-include("maneuver_definition.jl")     
-include("vehicle_definition.jl")    
-include("monitor_definition.jl")   
+# Include dragonfly-specific modules
+include("maneuver_definition.jl")      # Kinematic maneuver generation
+include("vehicle_definition.jl")      # Vehicle geometry construction
+include("monitor_definition.jl")       # Monitoring and analysis functions
+
+
+
 
 # =============================================================================
 # SIMULATION PARAMETERS
@@ -18,9 +36,12 @@ include("monitor_definition.jl")
 
 # ----------------- GENERAL SIMULATION SETUP ----------------------------------
 run_name        = "dragonfly"    # Name of this simulation
-save_path       = ""  # Where to save results
+save_path       = "/home/dysco/Neeraj/Dragonfly flowunsteady/modular/results/"  # Where to save results
 paraview        = true                              # Whether to visualize with Paraview
 compute_fluid_domain = true                         # Whether to compute fluid domain post-simulation
+
+
+
 
 # ----------------- GEOMETRY PARAMETERS ----------------------------------------
 n_factor        = 2                         # Discretization factor
@@ -30,20 +51,23 @@ add_rotors      = false                     # No rotors for dragonfly
 # Reference lengths (typical dragonfly dimensions)
 wingspan        = 1.0                      # (m) dragonfly wingspan
 
+
+
+
+
 # ----------------- FLIGHT PARAMETERS ------------------------------------------
 # Flapping kinematics
 flap_amplitude  = 60.0                      # (degrees) flapping amplitude
-flap_frequency  = 30.0                      # (Hz) flapping frequency
+flap_frequency  = 2.0                      # (Hz) flapping frequency
 vehicle_velocity = 1.0                      # (m/s) forward flight velocity
 angle_of_attack = 5.0                       # (degrees) vehicle angle of attack
 
 # Flight conditions
-Vinf(X,t)       = 20.0*[1.0, 0.0, 0.0]  # (m/s) freestream velocity
 rho             = 1.225                     # (kg/m^3) air density
 mu              = 1.81e-5                   # (kg/ms) air dynamic viscosity
 
 # Time parameters
-flap_cycles     = 3                         # Number of flapping cycles to simulate
+flap_cycles     = 10                         # Number of flapping cycles to simulate
 ttot            = flap_cycles / flap_frequency  # (s) total simulation time
 nsteps          = 150 * flap_cycles         # Time steps (150 per cycle for efficiency)
 dt              = ttot / nsteps             # (s) time step
@@ -52,6 +76,12 @@ dt              = ttot / nsteps             # (s) time step
 tstart          = 0.00 * ttot               # (s) start time
 tquit           = 1.00 * ttot               # (s) end time
 
+Vinf(X, t)      = 20.0*[1.0, 0.0, 0.0]  # Freestream function
+
+
+
+
+
 # ----------------- SOLVER PARAMETERS ------------------------------------------
 
 # Aerodynamic solver
@@ -59,14 +89,14 @@ VehicleType     = uns.UVLMVehicle           # Unsteady solver for flapping wings
 
 # VPM particle shedding
 p_per_step      = 2                         # Particles shed per time step (reduced for efficiency)
-shed_starting   = false                     # No starting vortex needed
+shed_starting   = true                     # No starting vortex needed
 shed_unsteady   = true                      # Shed vorticity from unsteady loading
 unsteady_shedcrit = 0.01                    # Circulation fluctuation threshold
 
 # Regularization parameters
-sigma_vlm_surf  = wingspan/150              # VLM-on-VPM smoothing radius
+sigma_vlm_surf  = wingspan/100              # VLM-on-VPM smoothing radius
 lambda_vpm      = 2.125                     # VPM core overlap
-sigma_vpm_overwrite = lambda_vpm * flap_frequency * flap_amplitude * pi/180 * dt / p_per_step
+sigma_vpm_overwrite = lambda_vpm * flap_frequency * flap_amplitude * pi/180 * dt / p_per_step #------------------is this correct----------------
 sigmafactor_vpmonvlm = 1                    # VPM-on-VLM velocity factor
 
 # Wing solver parameters
@@ -80,12 +110,12 @@ vlm_vortexsheet_maxstaticparticle = vlm_vortexsheet ? 1000000 : nothing
 # Force calculation parameters
 KJforce_type    = "regular"                 # Kutta-Joukowski force type
 include_trailingboundvortex = false
-include_unsteadyforce = true                # Critical for flapping wing aerodynamics
+include_unsteadyforce = false                # Critical for flapping wing aerodynamics
 add_unsteadyforce = false
-include_parasiticdrag = true
-add_skinfriction = true
+include_parasiticdrag = false
+add_skinfriction = false
 calc_cd_from_cl = false
-wing_polar_file = "xf-n0012-il-500000-n5.csv"
+wing_polar_file = "xf-n0012-il-500000-n5.csv" 
 
 # VPM solver settings
 vpm_integration = vpm.euler                 # Temporal integration scheme
@@ -96,6 +126,10 @@ vpm_SFS = vpm.DynamicSFS(vpm.Estr_fmm, vpm.pseudo3level_positive;
                          alpha=0.999, maxC=1.0,
                          clippings=[vpm.clipping_backscatter],
                          controls=[vpm.control_directional, vpm.control_magnitude])
+
+
+
+
 
 # ----------------- FLUID DOMAIN PARAMETERS --------------------------------
 # Grid parameters for fluid domain computation
@@ -121,6 +155,10 @@ maxmagGamma_domain = Inf                    # Maximum vortex strength
 pfield_prefix   = "dragonfly_pfield"        # Prefix of particle field files
 staticpfield_prefix = "dragonfly_staticpfield"  # Prefix of static particle field files
 fdom_prefix     = "dragonfly"               # Prefix of fluid domain files
+
+
+
+
 
 # =============================================================================
 # SIMULATION EXECUTION
@@ -150,6 +188,10 @@ maneuver = generate_dragonfly_maneuver(;
 
 println("   Maneuver configured: $(flap_cycles) cycles at $(flap_frequency) Hz")
 
+
+
+
+
 # ----------------- 3) SIMULATION DEFINITION -----------------------------------
 println("\n3) Setting up simulation...")
 
@@ -173,6 +215,9 @@ max_particles = min(3000000, max_particles)  # Reasonable limit for dragonfly
 println("   Simulation configured: $nsteps steps, max $max_particles particles")
 
 
+
+
+
 # ----------------- 4) FORCE CALCULATION SETUP --------------------------------
 println("\n4) Setting up force calculations...")
 
@@ -188,9 +233,9 @@ forces = []
 
 # Kutta-Joukowski force (primary lift mechanism) - simplified approach
 kuttajoukowski = uns.generate_aerodynamicforce_kuttajoukowski(
-    "regular",                    # Use simple force type to avoid VPM coupling issues
+    "regular",            
     sigma_vlm_surf, 0.0,         # No rotor surface
-    false, 2.125,                # Disable vortex sheet initially
+    false, 2.125,                
     uns.g_pressure, sigma_vpm_overwrite;
     vehicle=vehicle,
 )
@@ -239,31 +284,28 @@ function simulation_calc_aerodynamicforce_fun(vlm_system, args...; per_unit_span
 end
 
 
+
+
+
 # ----------------- 5) MONITORS SETUP ------------------------------------------
 println("\n5) Setting up monitoring functions...")
 
-# Wing monitor options - use unified force calculation function
+# Wing monitor options
 wingmonitor_optargs = (
     include_trailingboundvortex=include_trailingboundvortex,
-    calc_aerodynamicforce_fun=calc_aerodynamicforce_fun  # Use the unified function
+    calc_aerodynamicforce_fun=calc_aerodynamicforce_fun
 )
 
-# Generate monitoring functions with proper error handling
-try
-    monitors = generate_monitor_dragonfly(
-        vehicle, rho, Vinf, nsteps, save_path;
-        add_wings=add_wings,
-        wingmonitor_optargs=wingmonitor_optargs
-    )
-    println("   Monitoring functions configured successfully")
-catch e
-    println("   Warning: Monitor setup failed: $e")
-    # Create minimal monitoring as fallback
-    monitors = uns.generate_monitor_statevariables(;
-        save_path=save_path,
-        figname="vehicle_states"
-    )
-end
+# Generate monitoring functions
+monitors = generate_monitor_dragonfly(
+    vehicle, rho, Vinf, nsteps, save_path;
+    add_wings=add_wings,
+    wingmonitor_optargs=wingmonitor_optargs
+)
+
+
+
+
 
 
 # ----------------- 6) WAKE TREATMENT ------------------------------------------
@@ -297,11 +339,17 @@ wake_treatment = uns.concatenate(
 # Combined runtime function
 runtime_function = uns.concatenate(wake_treatment, monitors)
 
+
+
+
+
+
 # ----------------- 7) RUN SIMULATION ------------------------------------------
 println("\n7) Running simulation...")
 println("   Simulating $flap_cycles flapping cycles over $(round(ttot, digits=3)) seconds")
 println("   Forward velocity: $(vehicle_velocity) m/s")
 println("   Angle of attack: $(angle_of_attack)°")
+# println("   Reynolds number: $(round(Re, digits=0))")
 
 # Execute simulation
 uns.run_simulation(simulation, nsteps;
@@ -318,7 +366,7 @@ uns.run_simulation(simulation, nsteps;
     vpm_viscous=vpm_viscous,
     vpm_SFS=vpm_SFS,
     sigma_vlm_surf=sigma_vlm_surf,
-    sigma_rotor_surf=0.0,  # No rotors
+    sigma_rotor_surf=0.000000001,  # No rotors
     sigma_vpm_overwrite=sigma_vpm_overwrite,
     sigmafactor_vpmonvlm=sigmafactor_vpmonvlm,
     vlm_vortexsheet=vlm_vortexsheet,
@@ -336,9 +384,16 @@ uns.run_simulation(simulation, nsteps;
     save_path=save_path,
     run_name=run_name,
     save_wopwopin=false,
+    # save_pfield=true,     # Required for fluid domain computation
+    # save_staticpfield=true # Required for complete flow analysis
 )
 
 println("   Simulation completed successfully!")
+
+
+
+
+
 
 # =============================================================================
 # FLUID DOMAIN COMPUTATION
@@ -408,6 +463,11 @@ else
     println("\n   Skipping fluid domain computation (compute_fluid_domain = false)")
 end
 
+
+
+
+
+
 # =============================================================================
 # POST-PROCESSING AND VISUALIZATION
 # =============================================================================
@@ -470,4 +530,3 @@ end
 println("\n" * "="^80)
 println("DRAGONFLY SIMULATION COMPLETE")
 println("="^80)
-
