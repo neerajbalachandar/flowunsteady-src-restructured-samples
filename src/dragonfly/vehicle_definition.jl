@@ -54,9 +54,9 @@ Returns a configured UVLM vehicle with all wing systems.
     # Generate body geometry
     body = uns.import_vsp(body_component; geomType="fuselage")
     # Process wing geometries with proper orientation
-    fore_wing_left = uns.import_vsp(fore_wing_component; geomType="wing", symmetric=true)
+    fore_wing_left = uns.import_vsp(fore_wing_component; geomType="wing", flip_y=true)
     fore_wing_right = uns.import_vsp(fore_wing_component; geomType="wing")
-    hind_wing_left = uns.import_vsp(hind_wing_component; geomType="wing", symmetric=true)
+    hind_wing_left = uns.import_vsp(hind_wing_component; geomType="wing", flip_y=true)
     hind_wing_right = uns.import_vsp(hind_wing_component; geomType="wing")
   
     println("dragonfly geometry imported")
