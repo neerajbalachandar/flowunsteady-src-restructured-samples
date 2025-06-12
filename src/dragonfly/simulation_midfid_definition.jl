@@ -38,7 +38,7 @@ vehicle_velocity = 1.0                      # (m/s) forward flight velocity
 angle_of_attack = 5.0                       # (degrees) vehicle angle of attack
 
 # Flight conditions
-Vinf(X,t)       = [vehicle_velocity, 0, 0]  # (m/s) freestream velocity
+Vinf(X,t)       = [vehicle_velocity, 0.0, 0.0]  # (m/s) freestream velocity
 rho             = 1.225                     # (kg/m^3) air density
 mu              = 1.81e-5                   # (kg/ms) air dynamic viscosity
 
