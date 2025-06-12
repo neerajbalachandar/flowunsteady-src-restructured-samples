@@ -306,7 +306,7 @@ uns.run_simulation(simulation, nsteps;
     max_static_particles=vlm_vortexsheet_maxstaticparticle,
     vpm_integration=vpm_integration,
     vpm_viscous=vpm_viscous,
-    vpm_SFS=vmp_SFS,
+    vpm_SFS=vpm_SFS,
     sigma_vlm_surf=sigma_vlm_surf,
     sigma_rotor_surf=0.0,  # No rotors
     sigma_vpm_overwrite=sigma_vpm_overwrite,
