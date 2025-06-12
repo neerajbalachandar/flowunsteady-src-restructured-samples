@@ -85,7 +85,7 @@ add_unsteadyforce = false
 include_parasiticdrag = true
 add_skinfriction = true
 calc_cd_from_cl = false
-wing_polar_file = "xf-n0003-il-100000-n5.csv"  # Thin airfoil for dragonfly wings
+wing_polar_file = "xf-n0012-il-500000-n5.csv"  # Thin airfoil for dragonfly wings
 
 # VPM solver settings
 vpm_integration = vpm.euler                 # Temporal integration scheme
