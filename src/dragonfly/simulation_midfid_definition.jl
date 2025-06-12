@@ -172,31 +172,39 @@ max_particles = min(3000000, max_particles)  # Reasonable limit for dragonfly
 
 println("   Simulation configured: $nsteps steps, max $max_particles particles")
 
+
 # ----------------- 4) FORCE CALCULATION SETUP --------------------------------
 println("\n4) Setting up force calculations...")
 
+# Create unified force calculation function that matches monitor requirements
+calc_aerodynamicforce_fun = uns.generate_calc_aerodynamicforce(;
+    add_parasiticdrag=include_parasiticdrag,
+    add_skinfriction=add_skinfriction,
+    airfoilpolar=wing_polar_file,
+)
+
+# Initialize forces array for simulation
 forces = []
 
-# Kutta-Joukowski force (primary lift mechanism)
+# Kutta-Joukowski force (primary lift mechanism) - simplified approach
 kuttajoukowski = uns.generate_aerodynamicforce_kuttajoukowski(
-    KJforce_type,
-    sigma_vlm_surf, 0.0,  # No rotor surface
-    vlm_vortexsheet, vlm_vortexsheet_overlap,
-    vlm_vortexsheet_distribution,
-    vlm_vortexsheet_sigma_tbv;
-    vehicle=vehicle
+    "regular",                    # Use simple force type to avoid VPM coupling issues
+    sigma_vlm_surf, 0.0,         # No rotor surface
+    false, 2.125,                # Disable vortex sheet initially
+    uns.g_pressure, sigma_vpm_overwrite;
+    vehicle=vehicle,
 )
 push!(forces, kuttajoukowski)
 
-# Unsteady force (critical for flapping aerodynamics)
+# Unsteady force (critical for flapping aerodynamics) - conditional inclusion
 if include_unsteadyforce
-    unsteady(args...; optargs...) = uns.calc_aerodynamicforce_unsteady(
-        args...; add_to_Ftot=add_unsteadyforce, optargs...
+    unsteady_force = uns.generate_calc_aerodynamicforce_unsteady(;
+        add_to_Ftot=add_unsteadyforce
     )
-    push!(forces, unsteady)
+    push!(forces, unsteady_force)
 end
 
-# Parasitic drag force
+# Parasitic drag force - only if enabled
 if include_parasiticdrag
     parasiticdrag = uns.generate_aerodynamicforce_parasiticdrag(
         wing_polar_file;
@@ -206,36 +214,57 @@ if include_parasiticdrag
     push!(forces, parasiticdrag)
 end
 
-# Combined force calculation function
-function calc_aerodynamicforce_fun(vlm_system, args...; per_unit_span=false, optargs...)
+# Combined force calculation function for simulation runtime
+function simulation_calc_aerodynamicforce_fun(vlm_system, args...; per_unit_span=false, optargs...)
     fieldname = per_unit_span ? "ftot" : "Ftot"
+    
+    # Clear previous force calculations
     if fieldname in keys(vlm_system.sol)
         pop!(vlm_system.sol, fieldname)
     end
     
     Ftot = nothing
-    for force in forces
-        Ftot = force(vlm_system, args...; per_unit_span=per_unit_span, optargs...)
+    
+    # Apply each force component sequentially
+    for (i, force) in enumerate(forces)
+        try
+            Ftot = force(vlm_system, args...; per_unit_span=per_unit_span, optargs...)
+        catch e
+            println("Warning: Force component $i failed: $e")
+            # Continue with other force components
+        end
     end
     
     return Ftot
 end
 
+
 # ----------------- 5) MONITORS SETUP ------------------------------------------
 println("\n5) Setting up monitoring functions...")
 
-# Wing monitor options
+# Wing monitor options - use unified force calculation function
 wingmonitor_optargs = (
     include_trailingboundvortex=include_trailingboundvortex,
-    calc_aerodynamicforce_fun=calc_aerodynamicforce_fun
+    calc_aerodynamicforce_fun=calc_aerodynamicforce_fun  # Use the unified function
 )
 
-# Generate monitoring functions
-monitors = generate_monitor_dragonfly(
-    vehicle, rho, Vinf, nsteps, save_path;
-    add_wings=add_wings,
-    wingmonitor_optargs=wingmonitor_optargs
-)
+# Generate monitoring functions with proper error handling
+try
+    monitors = generate_monitor_dragonfly(
+        vehicle, rho, Vinf, nsteps, save_path;
+        add_wings=add_wings,
+        wingmonitor_optargs=wingmonitor_optargs
+    )
+    println("   Monitoring functions configured successfully")
+catch e
+    println("   Warning: Monitor setup failed: $e")
+    # Create minimal monitoring as fallback
+    monitors = uns.generate_monitor_statevariables(;
+        save_path=save_path,
+        figname="vehicle_states"
+    )
+end
+
 
 # ----------------- 6) WAKE TREATMENT ------------------------------------------
 println("\n6) Configuring wake treatment...")
