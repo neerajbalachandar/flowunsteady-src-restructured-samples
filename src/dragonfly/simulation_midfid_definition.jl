@@ -32,8 +32,8 @@ include("monitor_definition.jl")       # Monitoring and analysis functions
 # =============================================================================
 
 # ----------------- GENERAL SIMULATION SETUP ----------------------------------
-run_name        = "dragonfly_flapping_complete"    # Name of this simulation
-save_path       = "dragonfly-complete-simulation"  # Where to save results
+run_name        = "dragonfly"    # Name of this simulation
+save_path       = ""  # Where to save results
 paraview        = true                              # Whether to visualize with Paraview
 compute_fluid_domain = true                         # Whether to compute fluid domain post-simulation
 
