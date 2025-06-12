@@ -307,8 +307,8 @@ uns.run_simulation(simulation, nsteps;
     save_path=save_path,
     run_name=run_name,
     save_wopwopin=false,  # Not needed for dragonfly
-    save_pfield=true,     # Required for fluid domain computation
-    save_staticpfield=true # Required for complete flow analysis
+    # save_pfield=true,     # Required for fluid domain computation
+    # save_staticpfield=true # Required for complete flow analysis
 )
 
 println("   Simulation completed successfully!")
