@@ -33,16 +33,12 @@ function generate_dragonfly_maneuver(; disp_plot = true, add_wings = true, vehic
     vehicle_velocity_func(t) = [vehicle_velocity, 0, 0]
     vehicle_angle_func(t) = [0, angle_of_attack, 0]
     
-    fore_wing_left_angle(t) = [0, amp * sin(freq * t), 0]
-    fore_wing_right_angle(t) = [0, -amp * sin(freq * t), 0]
-    hind_wing_left_angle(t) = [0, amp * sin(freq * t), 0]
-    hind_wing_right_angle(t) = [0, -amp * sin(freq * t), 0]
+    fore_wing_angle(t) = [0, amp * sin(freq * t), 0]
+    hind_wing_angle(t) = [0, amp * sin(freq * t), 0]
     
     wing_angles = (
-        fore_wing_left_angle,
-        fore_wing_right_angle,
-        hind_wing_left_angle,
-        hind_wing_right_angle
+        fore_wing_angle,
+        hind_wing_angle
     )
   
     rotor_rpms = ()
