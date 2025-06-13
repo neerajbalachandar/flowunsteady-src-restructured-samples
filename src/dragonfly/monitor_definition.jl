@@ -83,15 +83,6 @@ function generate_monitor_dragonfly(vehicle, rho, Vinf, nsteps, save_path;
                                                                     false, nothing,
                                                                     nothing, vehicle)
 
-        # Parasitic drag
-        if add_parasiticdrag
-            parasiticdrag = generate_aerodynamicforce_parasiticdrag(airfoilpolar;
-                                                                    add_skinfriction=add_skinfriction,
-                                                                    parasiticdrag_args...)
-        end
-
-        # Force due to unsteady circulation
-        unsteady(args...; optargs...) = calc_aerodynamicforce_unsteady(args...; add_to_Ftot=false, optargs...)
 
         function calc_aerodynamicforce(vlm_system, args...; per_unit_span=false, optargs...)
 
@@ -101,15 +92,8 @@ function generate_monitor_dragonfly(vehicle, rho, Vinf, nsteps, save_path;
                 pop!(vlm_system.sol, fieldname)
             end
             
-            Ftot = unsteady(vlm_system, args...; per_unit_span=per_unit_span, optargs...)
-            
             # Calculate Kutta-Joukowski force
             Ftot = kuttajoukowski(vlm_system, args...; per_unit_span=per_unit_span, optargs...)
-            
-            if add_parasiticdrag
-                Ftot = parasiticdrag(vlm_system, args...;
-                                        per_unit_span=per_unit_span, optargs...)
-            end
             return Ftot
 
         end
