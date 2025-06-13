@@ -25,20 +25,24 @@ systems are given by the function `angle`.
 """
 
 
-function generate_dragonfly_maneuver(; disp_plot = true, add_wings = true, vehicle_velocity::Real=0.0, angle_of_attack::Real=0.0)
+function generate_dragonfly_maneuver(; disp_plot = true, add_wings = true, vehicle_velocity::Real=0.001, angle_of_attack::Real=3.0)
     
-    amp = 60 * (pi/180) 
-    freq = 30 # Hz      
+    amp = 30 * (pi/180)
+    freq = 4   
     
     vehicle_velocity_func(t) = [vehicle_velocity, 0, 0]
     vehicle_angle_func(t) = [0, angle_of_attack, 0]
     
-    fore_wing_angle(t) = [0, amp * sin(freq * t), 0]
-    hind_wing_angle(t) = [0, amp * sin(freq * t), 0]
+    fore_left_wing_angle(t) = [amp * sin(freq * t), 0, 0]
+    fore_right_wing_angle(t) = [-amp * sin(freq * t), 0, 0]
+    hind_left_wing_angle(t) = [amp * sin(freq * t), 0, 0]
+    hind_right_wing_angle(t) = [-amp * sin(freq * t), 0, 0]
     
     wing_angles = (
-        fore_wing_angle,
-        hind_wing_angle
+        fore_left_wing_angle,
+        fore_right_wing_angle,
+        hind_left_wing_angle,
+        hind_right_wing_angle
     )
   
     rotor_rpms = ()
