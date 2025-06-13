@@ -121,7 +121,7 @@ Returns a configured UVLM vehicle with all wing systems.
 
     #EXPORTING---------------
     # Define output directory
-    save_geom_path = "/home/dysco/Neeraj/Dragonfly flowunsteady/modular/Dragonfly_Geom/"
+    save_geom_path = ""
 
     # Clean/create directory
     if isdir(save_geom_path)
