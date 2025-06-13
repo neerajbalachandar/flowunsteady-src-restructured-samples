@@ -37,7 +37,7 @@ include("monitor_definition.jl")       # Monitoring and analysis functions
 
 # ----------------- GENERAL SIMULATION SETUP ----------------------------------
 run_name        = "dragonfly"    # Name of this simulation
-save_path       = "/home/dysco/Neeraj/Dragonfly flowunsteady/modular/results/"  # Where to save results
+save_path       = ""  # Where to save results
 paraview        = true                              # Whether to visualize with Paraview
 compute_fluid_domain = true                         # Whether to compute fluid domain post-simulation
 
