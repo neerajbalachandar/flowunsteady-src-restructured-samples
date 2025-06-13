@@ -34,7 +34,7 @@ out of FLOWVLM components (Wing, WingSystem).
 * `grid_O::Vector{Vector}`       : Origin of every grid
 """
 
-#-----------------------------------------------------------FLOWUnsteady_openvsp.jl--------------------------------------------------------------------------------
+#-----------------------------------------------------------FLOWUnsteady_openvsp.jl-----------------------------
 function dragonfly_geometry()
 """
     dragonfly_geometry() -> UVLMVehicle
@@ -54,14 +54,14 @@ Returns a configured UVLM vehicle with all wing systems.
     # Generate body geometry
     body = uns.import_vsp(body_component; geomType="fuselage")
     # Process wing geometries with proper orientation
-    fore_wing_left = uns.import_vsp(fore_wing_component; geomType="wing", flip_y=true)
-    fore_wing_right = uns.import_vsp(fore_wing_component; geomType="wing")
-    hind_wing_left = uns.import_vsp(hind_wing_component; geomType="wing", flip_y=true)
-    hind_wing_right = uns.import_vsp(hind_wing_component; geomType="wing")
+    fore_wing_left = uns.import_vsp(fore_wing_component; geomType="wing")
+    fore_wing_right = uns.import_vsp(fore_wing_component; geomType="wing", flip_y=true)
+    hind_wing_left = uns.import_vsp(hind_wing_component; geomType="wing")
+    hind_wing_right = uns.import_vsp(hind_wing_component; geomType="wing", flip_y=true)
   
     println("dragonfly geometry imported")
 
-#-------------------------------------------------------------FLOWUnsteady_vehicle_vlm_unsteady.jl--------------------------------------------------------------------------
+#-------------------------------------------------------------FLOWUnsteady_vehicle_vlm_unsteady.jl--------------------
     # Create body grid
     fuselage_grid = uns.gt.MultiGrid(3)
     uns.gt.addgrid(fuselage_grid, "Body", body)
@@ -76,19 +76,22 @@ Returns a configured UVLM vehicle with all wing systems.
     uns.vlm.addwing(system, "HindWing_R", hind_wing_right)
     
     # Configure tilting systems as WingSystem subgroups
-    fore_tilting_system = uns.vlm.WingSystem()
-    hind_tilting_system = uns.vlm.WingSystem()
+    fore_left_tilting_system = uns.vlm.WingSystem()
+    fore_right_tilting_system = uns.vlm.WingSystem()
     
-    # Reference wings in tilting systems (no duplication)
-    uns.vlm.addwing(fore_tilting_system, "Left", fore_wing_left)
-    uns.vlm.addwing(fore_tilting_system, "Right", fore_wing_right)
-    uns.vlm.addwing(hind_tilting_system, "Left", hind_wing_left)
-    uns.vlm.addwing(hind_tilting_system, "Right", hind_wing_right)
+    hind_left_tilting_system = uns.vlm.WingSystem()
+    hind_right_tilting_system = uns.vlm.WingSystem()
+    
+    # Reference wings in tilting systems
+    uns.vlm.addwing(fore_left_tilting_system, "Left", fore_wing_left)
+    uns.vlm.addwing(fore_right_tilting_system, "Right", fore_wing_right)
+    uns.vlm.addwing(hind_left_tilting_system, "Left", hind_wing_left)
+    uns.vlm.addwing(hind_right_tilting_system, "Right", hind_wing_right)
     
     # Initialize vehicle with proper kinematic hierarchy
     vehicle = uns.UVLMVehicle(
         system;
-        tilting_systems = (fore_tilting_system, hind_tilting_system),
+        tilting_systems = (fore_left_tilting_system, fore_right_tilting_system, hind_left_tilting_system, hind_right_tilting_system),
         grids = [fuselage_grid],
         vlm_system = system,  # Solve entire system with VLM
         wake_system = system, # Shed wake from all components
@@ -111,32 +114,32 @@ Returns a configured UVLM vehicle with all wing systems.
     end
     
     # Initialize grid origins for kinematic transformations
-    vehicle.grid_O = [zeros(3) for _ in vehicle.grids]
+    # vehicle.grid_O = [zeros(3) for _ in vehicle.grids]
     
     println("UVLM vehicle configuration successful")
     return vehicle
 
     #EXPORTING---------------
     # Define output directory
-    save_geom_path = ""
-    
+    save_geom_path = "/home/dysco/Neeraj/Dragonfly flowunsteady/modular/Dragonfly_Geom/"
+
     # Clean/create directory
     if isdir(save_geom_path)
         rm(save_geom_path; recursive=true, force=true)
     end
     mkdir(save_geom_path)
-    
+
     # Set freestream velocity for visualization context
     uns.vlm.setVinf(system, Vinf)
-    
+
     # Save VTK files and get master PVD file name
     pvd_file = uns.save_vtk(vehicle, "dragonfly"; 
                             path=save_geom_path,
                             save_wopwopin=false)  # Set true if needing acoustic inputs
-    
+
     # Open in ParaView using the master PVD file
     paraview_file = joinpath(save_geom_path, pvd_file)
     run(`paraview --data=$paraview_file`, wait=false)
-    
+
 end
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------------------
