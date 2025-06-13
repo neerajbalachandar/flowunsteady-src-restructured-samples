@@ -37,7 +37,7 @@ include("monitor_definition.jl")       # Monitoring and analysis functions
 
 # ----------------- GENERAL SIMULATION SETUP ----------------------------------
 run_name        = "dragonfly"    # Name of this simulation
-save_path       = ""  # Where to save results
+save_path       = "/home/dysco/Neeraj/Dragonfly flowunsteady/modular/results/"  # Where to save results
 paraview        = true                              # Whether to visualize with Paraview
 compute_fluid_domain = true                         # Whether to compute fluid domain post-simulation
 
@@ -58,7 +58,7 @@ wingspan        = 1.0                      # (m) dragonfly wingspan
 
 # ----------------- FLIGHT PARAMETERS ------------------------------------------
 # Flapping kinematics
-flap_amplitude  = 40.0                      # (degrees) flapping amplitude
+flap_amplitude  = 30.0*(pi/180)                      # (degrees) flapping amplitude
 flap_frequency  = 4.0                      # (Hz) flapping frequency
 vehicle_velocity = 0.001                      # (m/s) forward flight velocity
 angle_of_attack = 3.0                       # (degrees) vehicle angle of attack
@@ -200,7 +200,7 @@ println("\n3) Setting up simulation...")
 
 # Reference parameters
 Vref = vehicle_velocity
-RPMref = flap_frequency * 1                # Reference RPM equivalent
+RPMref = flap_frequency * 60                # Reference RPM equivalent
 
 # Initial conditions
 t0 = tstart / ttot
@@ -292,15 +292,6 @@ function generate_calc_aerodynamicforce(; add_parasiticdrag=false,
                                                                 false, nothing,
                                                                 nothing, vehicle)
 
-    if add_parasiticdrag
-        parasiticdrag = generate_aerodynamicforce_parasiticdrag(airfoilpolar;
-                                                                add_skinfriction=add_skinfriction,
-                                                                parasiticdrag_args...)
-    end
-
-    # Force due to unsteady circulation
-    unsteady(args...; optargs...) = calc_aerodynamicforce_unsteady(args...; add_to_Ftot=false, optargs...)
-
 
     function calc_aerodynamicforce(vlm_system, args...; per_unit_span=false, optargs...)
 
@@ -310,18 +301,11 @@ function generate_calc_aerodynamicforce(; add_parasiticdrag=false,
             pop!(vlm_system.sol, fieldname)
         end
 
-        # Calculate unsteady force
-        Ftot = unsteady(vlm_system, args...; per_unit_span=per_unit_span, optargs...)
-
         # Calculate Kutta-Joukowski force
         Ftot = kuttajoukowski(vlm_system, args...; per_unit_span=per_unit_span, optargs...)
-        
-        if add_parasiticdrag
-            Ftot = parasiticdrag(vlm_system, args...;
-                                    per_unit_span=per_unit_span, optargs...)
-        end
 
         return Ftot
+
     end
 
     return calc_aerodynamicforce
@@ -753,11 +737,10 @@ uns.run_simulation(simulation, nsteps;
     vlm_vortexsheet_sigma_tbv=vlm_vortexsheet_sigma_tbv,
     vlm_rlx=vlm_rlx,
     vlm_init=true,
-    hubtiploss_correction=nothing,  # No rotors
+    hubtiploss_correction=nothing,
     shed_starting=shed_starting,
     shed_unsteady=shed_unsteady,
     unsteady_shedcrit=unsteady_shedcrit,
-    # extra_runtime_function=runtime_function,
     extra_runtime_function=monitors,
     
     # Output options
