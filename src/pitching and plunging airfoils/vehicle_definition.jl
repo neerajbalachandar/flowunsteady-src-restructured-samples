@@ -93,7 +93,7 @@ function wing_geometry()
 
     #EXPORTING---------------
     # Define output directory
-    save_geom_path = "/home/dysco/FLOWUnsteady/FLOWUnsteady/flapping_wing_journal/pitching plunging wing/geometry/"
+    save_geom_path = ""
 
     # Clean/create directory
     if isdir(save_geom_path)
