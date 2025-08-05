@@ -32,7 +32,7 @@ include("monitor_definition.jl")
 
 # ----------------- GENERAL SIMULATION SETUP ----------------------------------
 run_name        = "p_p_flapping"    # Pitching Plunging flapping
-save_path       = "/home/dysco/FLOWUnsteady/FLOWUnsteady/flapping_wing_journal/pitching plunging wing/iterative results/3rf_0.10rh_high_fid/"  # Where to save results
+save_path       = ""  # Where to save results
 paraview        = true                           
 compute_fluid_domain = true                       
 save_horseshoes = true
